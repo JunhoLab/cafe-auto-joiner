@@ -52,9 +52,23 @@ class BrowserSession:
 def _configure_playwright_browsers_path() -> None:
     if getattr(sys, "frozen", False):
         app_dir = os.path.dirname(sys.executable)
-        bundled_browsers = os.path.join(app_dir, "ms-playwright")
-        if os.path.isdir(bundled_browsers):
-            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = bundled_browsers
+        candidates = [
+            os.path.join(app_dir, "ms-playwright"),
+            os.path.join(app_dir, "_internal", "ms-playwright"),
+        ]
+        meipass = getattr(sys, "_MEIPASS", "")
+        if meipass:
+            candidates.extend(
+                [
+                    os.path.join(meipass, "ms-playwright"),
+                    os.path.join(meipass, "_internal", "ms-playwright"),
+                ]
+            )
+
+        for bundled_browsers in candidates:
+            if os.path.isdir(bundled_browsers):
+                os.environ["PLAYWRIGHT_BROWSERS_PATH"] = bundled_browsers
+                return
 
 
 def build_browser_session(config: BrowserConfig) -> BrowserSession:
