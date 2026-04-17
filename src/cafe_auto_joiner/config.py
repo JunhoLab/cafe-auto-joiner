@@ -72,6 +72,9 @@ DEFAULT_SELECTORS: Dict[str, List[str]] = {
         'text=카페가입이 완료',
         'text=가입 승인 대기',
         'text=가입이 신청',
+        'button:has-text("완료")',
+        'a:has-text("완료")',
+        '[role="button"]:has-text("완료")',
     ],
     "captcha_input": [
         'input[name="captchaCharCode"]',   # 네이버 카페 가입 캡차 실제 name
@@ -118,7 +121,6 @@ QUESTION_CONTAINER_SELECTORS = [
 
 @dataclass
 class BrowserConfig:
-    headless: bool = False
     slow_mo_ms: int = 80
     timeout_ms: int = 15000
     user_agent: Optional[str] = None

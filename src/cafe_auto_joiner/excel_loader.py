@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
 
 import openpyxl
@@ -30,9 +31,10 @@ class AccountRow:
 def load_excel(path: str) -> List[AccountRow]:
     wb = openpyxl.load_workbook(path)
     ws = wb.active
+    status_col = _find_column(ws, "status", fallback=11)
     rows: List[AccountRow] = []
     for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        cells = list(row) + [None] * max(0, 11 - len(row))
+        cells = list(row) + [None] * max(0, status_col - len(row))
         if not cells[0]:
             continue
         rows.append(AccountRow(
@@ -43,7 +45,7 @@ def load_excel(path: str) -> List[AccountRow]:
             nickname=str(cells[3] or "").strip(),
             spare_nickname=str(cells[4] or "").strip(),
             answers=[str(cells[i] or "").strip() for i in range(5, 10)],
-            status=str(cells[10] or STATUS_PENDING).strip(),
+            status=str(cells[status_col - 1] or STATUS_PENDING).strip(),
         ))
     return rows
 
@@ -51,5 +53,18 @@ def load_excel(path: str) -> List[AccountRow]:
 def update_status(path: str, row_index: int, status: str) -> None:
     wb = openpyxl.load_workbook(path)
     ws = wb.active
-    ws.cell(row=row_index, column=11, value=status)
+    status_col = _find_column(ws, "status", fallback=11)
+    if status == STATUS_SUCCESS:
+        stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        ws.cell(row=row_index, column=status_col, value=f"카페가입완료 ({stamp})")
+    else:
+        ws.cell(row=row_index, column=status_col, value=status)
     wb.save(path)
+
+
+def _find_column(ws, header_name: str, fallback: int | None = None) -> int | None:
+    target = header_name.strip().lower()
+    for col_idx, value in enumerate(ws.iter_rows(min_row=1, max_row=1, values_only=True).__next__(), start=1):
+        if str(value or "").strip().lower() == target:
+            return col_idx
+    return fallback

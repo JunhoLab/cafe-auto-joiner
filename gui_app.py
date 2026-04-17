@@ -87,7 +87,6 @@ class BatchWorker(QObject):
         table_row_indices: List[int],
         excel_path: str,
         captcha_api_key: str,
-        headless: bool,
         ip_change_pause: bool,
     ):
         super().__init__()
@@ -95,7 +94,6 @@ class BatchWorker(QObject):
         self.table_row_indices = table_row_indices
         self.excel_path = excel_path
         self.captcha_api_key = captcha_api_key
-        self.headless = headless
         self.ip_change_pause = ip_change_pause
         self._stop_requested = False
 
@@ -159,7 +157,6 @@ class BatchWorker(QObject):
             spare_nickname=row.spare_nickname,
             captcha_api_key=self.captcha_api_key,
             browser=BrowserConfig(
-                headless=self.headless,
                 slow_mo_ms=100,
                 timeout_ms=15000,
             ),
@@ -231,7 +228,6 @@ class MainWindow(QMainWindow):
         self._captcha_key_input.setFixedWidth(300)
 
         # 옵션
-        self._headless_check = QCheckBox("Headless")
         self._ip_pause_check = QCheckBox("계정 간 IP변경 대기(5초)")
         self._ip_pause_check.setToolTip("계정이 바뀔 때 테더링 IP 변경을 위해 5초 일시정지")
 
@@ -251,7 +247,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._file_label)
         layout.addWidget(captcha_label)
         layout.addWidget(self._captcha_key_input)
-        layout.addWidget(self._headless_check)
         layout.addWidget(self._ip_pause_check)
         layout.addStretch(1)
         layout.addWidget(self._run_all_btn)
@@ -364,7 +359,6 @@ class MainWindow(QMainWindow):
             table_row_indices=table_indices,
             excel_path=self._excel_path,
             captcha_api_key=captcha_api_key,
-            headless=self._headless_check.isChecked(),
             ip_change_pause=self._ip_pause_check.isChecked(),
         )
         self._worker.moveToThread(self._worker_thread)

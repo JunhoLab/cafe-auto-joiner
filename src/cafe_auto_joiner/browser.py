@@ -108,7 +108,7 @@ def build_browser_session(config: BrowserConfig) -> BrowserSession:
 
 def _launch_browser(playwright: Playwright, config: BrowserConfig) -> Browser:
     launch_kwargs = {
-        "headless": config.headless,
+        "headless": False,
         "slow_mo": config.slow_mo_ms,
         "args": _LAUNCH_ARGS,
     }
@@ -132,7 +132,7 @@ def _launch_browser(playwright: Playwright, config: BrowserConfig) -> Browser:
 def _launch_persistent_context(playwright: Playwright, config: BrowserConfig, common_kwargs: dict) -> BrowserContext:
     launch_kwargs = {
         "user_data_dir": config.user_data_dir,
-        "headless": config.headless,
+        "headless": False,
         "slow_mo": config.slow_mo_ms,
         "args": _LAUNCH_ARGS,
         **common_kwargs,
