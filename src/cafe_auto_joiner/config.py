@@ -94,6 +94,15 @@ DEFAULT_SELECTORS: Dict[str, List[str]] = {
         'text=가입 승인 대기',
         'text=가입이 신청',
     ],
+    "failure_indicators": [
+        'text=가입이 제한',
+        'text=가입할 수 없습니다',
+        'text=가입이 불가',
+        'text=가입이 거부',
+        'text=차단된 접근',
+        'text=잘못된 접근',
+        'text=권한이 없습니다',
+    ],
     "captcha_input": [
         'input[name="captchaCharCode"]',   # 네이버 카페 가입 캡차 실제 name
         'input[name="code"]',

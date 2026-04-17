@@ -607,7 +607,37 @@ class CafeJoinAutomation:
                 self.logger.info("가입 대기 지시자 확인: %s", selector)
                 return "pending"
 
+        for selector in self.config.selectors_for("failure_indicators"):
+            if self._locator_exists(page, selector):
+                self.logger.warning("가입 실패 지시자 확인: %s", selector)
+                return "failed"
+
+        inferred = self._infer_outcome(page)
+        if inferred != "failed":
+            self.completed_steps.append("verified")
+            self.logger.info("가입 결과 추론: %s", inferred)
+            return inferred
+
         self.logger.warning("가입 완료/대기 지시자를 찾을 수 없음")
+        return "failed"
+
+    def _infer_outcome(self, page: Page) -> str:
+        try:
+            if "CafeApplyResultPopupView.nhn" in page.url:
+                return "pending"
+        except PlaywrightError:
+            pass
+
+        form_selectors = (
+            self.config.selectors_for("submit_application")
+            + self.config.selectors_for("captcha_input")
+            + self.config.selectors_for("nickname")
+        )
+        try:
+            if not self._any_locator_exists(page, form_selectors) and not self._is_captcha_present(page):
+                return "pending"
+        except PlaywrightError:
+            pass
         return "failed"
 
     def _should_treat_as_success(self, page: Page, exc: Exception) -> bool:
@@ -621,22 +651,9 @@ class CafeJoinAutomation:
         except PlaywrightError:
             pass
 
-        # 성공 문구가 보이거나, 더 이상 가입 폼/캡차가 없으면 성공으로 간주한다.
+        # 결과 문구가 보이거나, 결과 페이지/팝업으로 넘어가면 성공으로 간주한다.
         if self._verify_outcome(page) in {"joined", "pending"}:
             return True
-
-        form_selectors = (
-            self.config.selectors_for("submit_application")
-            + self.config.selectors_for("captcha_input")
-            + self.config.selectors_for("nickname")
-        )
-        try:
-            if not self._any_locator_exists(page, form_selectors) and not self._is_captcha_present(page):
-                self.logger.info("제출 후 가입 폼/캡차가 사라져 성공으로 간주합니다.")
-                self.completed_steps.append("verified")
-                return True
-        except PlaywrightError:
-            pass
         return False
 
     # ──────────────────────────────────────────────
