@@ -1,0 +1,2 @@
+"""Cafe auto joiner package."""
+
