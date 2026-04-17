@@ -34,6 +34,7 @@ if SRC_DIR not in sys.path:
 from cafe_auto_joiner.config import BrowserConfig, CaptchaConfig, JoinAutomationConfig
 from cafe_auto_joiner.excel_loader import (
     AccountRow,
+    STATUS_APPROVAL_PENDING,
     STATUS_FAILED,
     STATUS_PENDING,
     STATUS_SUCCESS,
@@ -116,8 +117,10 @@ class BatchWorker(QObject):
                 automation = CafeJoinAutomation(config=config, logger=logger)
                 result = automation.run()
 
-                if result.success:
+                if result.outcome == "joined":
                     status = STATUS_SUCCESS
+                elif result.outcome == "pending":
+                    status = STATUS_APPROVAL_PENDING
                 elif "캡차" in result.message or "captcha" in result.message.lower():
                     status = STATUS_CAPTCHA
                 else:
@@ -429,6 +432,7 @@ class MainWindow(QMainWindow):
         from PySide6.QtGui import QColor
         colors = {
             STATUS_SUCCESS: "#c8e6c9",
+            STATUS_APPROVAL_PENDING: "#fff9c4",
             STATUS_FAILED:  "#ffcdd2",
             STATUS_CAPTCHA: "#fff9c4",
             STATUS_PENDING: "#ffffff",

@@ -34,5 +34,5 @@ class JoinResult:
     success: bool
     current_url: str
     message: str
+    outcome: str = "failed"
     steps_completed: List[str] = field(default_factory=list)
-

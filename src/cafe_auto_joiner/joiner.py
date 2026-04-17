@@ -43,13 +43,19 @@ class CafeJoinAutomation:
             self._fill_nickname(page)
             self._fill_questions(page)
             self._submit(page)
-            success = self._verify_success(page)
-
-            message = "가입 절차가 완료되었습니다." if success else "가입 완료 여부를 명확히 확인하지 못했습니다."
+            outcome = self._verify_outcome(page)
+            success = outcome in {"joined", "pending"}
+            if outcome == "joined":
+                message = "가입 절차가 완료되었습니다."
+            elif outcome == "pending":
+                message = "가입 신청이 완료되었습니다. 매니저 승인 대기 상태입니다."
+            else:
+                message = "가입 완료 여부를 명확히 확인하지 못했습니다."
             return JoinResult(
                 success=success,
                 current_url=page.url,
                 message=message,
+                outcome=outcome,
                 steps_completed=self.completed_steps.copy(),
             )
         except (PlaywrightTimeoutError, PlaywrightError, StepExecutionError, CaptchaResolutionError) as exc:
@@ -58,12 +64,14 @@ class CafeJoinAutomation:
                     success=True,
                     current_url=page.url,
                     message="가입 절차가 완료되었습니다.",
+                    outcome="joined",
                     steps_completed=self.completed_steps.copy(),
                 )
             return JoinResult(
                 success=False,
                 current_url=page.url,
                 message=str(exc),
+                outcome="failed",
                 steps_completed=self.completed_steps.copy(),
             )
         finally:
@@ -583,17 +591,24 @@ class CafeJoinAutomation:
     # 성공 확인
     # ──────────────────────────────────────────────
 
-    def _verify_success(self, page: Page) -> bool:
-        indicators = self.config.selectors_for("success_indicators") + [
+    def _verify_outcome(self, page: Page) -> str:
+        success_indicators = self.config.selectors_for("success_indicators") + [
             f"text={text}" for text in self.config.extra_success_texts
         ]
-        for selector in indicators:
+        for selector in success_indicators:
             if self._locator_exists(page, selector):
                 self.completed_steps.append("verified")
-                self.logger.info("가입 성공 지시자 확인: %s", selector)
-                return True
-        self.logger.warning("가입 성공 지시자를 찾을 수 없음")
-        return False
+                self.logger.info("가입 완료 지시자 확인: %s", selector)
+                return "joined"
+
+        for selector in self.config.selectors_for("pending_indicators"):
+            if self._locator_exists(page, selector):
+                self.completed_steps.append("verified")
+                self.logger.info("가입 대기 지시자 확인: %s", selector)
+                return "pending"
+
+        self.logger.warning("가입 완료/대기 지시자를 찾을 수 없음")
+        return "failed"
 
     def _should_treat_as_success(self, page: Page, exc: Exception) -> bool:
         message = str(exc)
@@ -607,7 +622,7 @@ class CafeJoinAutomation:
             pass
 
         # 성공 문구가 보이거나, 더 이상 가입 폼/캡차가 없으면 성공으로 간주한다.
-        if self._verify_success(page):
+        if self._verify_outcome(page) in {"joined", "pending"}:
             return True
 
         form_selectors = (

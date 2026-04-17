@@ -7,7 +7,8 @@ from typing import List
 import openpyxl
 
 STATUS_PENDING = "대기"
-STATUS_SUCCESS = "완료"
+STATUS_SUCCESS = "카페가입완료"
+STATUS_APPROVAL_PENDING = "카페가입대기"
 STATUS_FAILED = "실패"
 STATUS_CAPTCHA = "캡차필요"
 
@@ -57,6 +58,9 @@ def update_status(path: str, row_index: int, status: str) -> None:
     if status == STATUS_SUCCESS:
         stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         ws.cell(row=row_index, column=status_col, value=f"카페가입완료 ({stamp})")
+    elif status == STATUS_APPROVAL_PENDING:
+        stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        ws.cell(row=row_index, column=status_col, value=f"카페가입대기 ({stamp})")
     else:
         ws.cell(row=row_index, column=status_col, value=status)
     wb.save(path)
