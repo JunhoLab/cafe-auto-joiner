@@ -1,9 +1,10 @@
+import os
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_submodules
 
 
-project_dir = Path(__file__).resolve().parent
+project_dir = Path(os.getcwd()).resolve()
 datas = []
 playwright_bundle = project_dir / "ms-playwright"
 if playwright_bundle.exists():
