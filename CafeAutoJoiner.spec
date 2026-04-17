@@ -2,17 +2,13 @@ import os
 from pathlib import Path
 
 project_dir = Path(os.getcwd()).resolve()
-datas = []
-playwright_bundle = project_dir / "ms-playwright"
-if playwright_bundle.exists():
-    datas.append((str(playwright_bundle), "ms-playwright"))
 
 
 a = Analysis(
     ["main.py"],
     pathex=[str(project_dir), str(project_dir / "src")],
     binaries=[],
-    datas=datas,
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

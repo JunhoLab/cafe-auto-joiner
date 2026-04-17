@@ -11,9 +11,6 @@ call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt pyinstaller
 
-set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
-python -m playwright install chromium
-
 pyinstaller --noconfirm --clean CafeAutoJoiner.spec
 
 echo.

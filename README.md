@@ -29,7 +29,6 @@ run_example.py      # 코드 직접 실행 예제
 
 ```bash
 python -m pip install -r requirements.txt
-python -m playwright install chromium
 ```
 
 ## 실행
@@ -39,6 +38,8 @@ python main.py
 ```
 
 GUI에서 `2Captcha API 키`를 입력한 뒤 실행한다.
+
+윈도우 `exe`는 시스템에 설치된 `Google Chrome`을 우선 사용하고, 없으면 `Microsoft Edge`를 시도한다.
 
 ## Windows EXE 빌드
 
@@ -59,7 +60,8 @@ build_windows.bat
 주의:
 
 - Windows `exe`는 Windows에서 빌드해야 한다.
-- `build_windows.bat`는 `.venv` 생성, 의존성 설치, `playwright install chromium`, `PyInstaller` 빌드를 한 번에 수행한다.
+- Windows 실행 PC에는 `Microsoft Edge` 또는 `Google Chrome`이 설치되어 있어야 한다.
+- `build_windows.bat`는 `.venv` 생성, 의존성 설치, `PyInstaller` 빌드를 한 번에 수행한다.
 - 결과물은 `dist/CafeAutoJoiner/` 아래에 생성된다.
 
 ## 응답 데이터 예시

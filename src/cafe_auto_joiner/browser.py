@@ -34,6 +34,8 @@ _LAUNCH_ARGS = [
     "--disable-setuid-sandbox",
 ]
 
+_WINDOWS_CHANNELS = ["chrome", "msedge"]
+
 
 @dataclass
 class BrowserSession:
@@ -85,20 +87,10 @@ def build_browser_session(config: BrowserConfig) -> BrowserSession:
 
     browser: Optional[Browser] = None
     if config.user_data_dir:
-        context = playwright.chromium.launch_persistent_context(
-            user_data_dir=config.user_data_dir,
-            headless=config.headless,
-            slow_mo=config.slow_mo_ms,
-            args=_LAUNCH_ARGS,
-            **common_kwargs,
-        )
+        context = _launch_persistent_context(playwright, config, common_kwargs)
         page = context.pages[0] if context.pages else context.new_page()
     else:
-        browser = playwright.chromium.launch(
-            headless=config.headless,
-            slow_mo=config.slow_mo_ms,
-            args=_LAUNCH_ARGS,
-        )
+        browser = _launch_browser(playwright, config)
         context = browser.new_context(**common_kwargs)
         page = context.new_page()
 
@@ -112,3 +104,51 @@ def build_browser_session(config: BrowserConfig) -> BrowserSession:
         context=context,
         page=page,
     )
+
+
+def _launch_browser(playwright: Playwright, config: BrowserConfig) -> Browser:
+    launch_kwargs = {
+        "headless": config.headless,
+        "slow_mo": config.slow_mo_ms,
+        "args": _LAUNCH_ARGS,
+    }
+
+    if sys.platform.startswith("win"):
+        last_error: Optional[Exception] = None
+        for channel in _WINDOWS_CHANNELS:
+            try:
+                return playwright.chromium.launch(channel=channel, **launch_kwargs)
+            except Exception as exc:
+                last_error = exc
+        if last_error is not None:
+            try:
+                return playwright.chromium.launch(**launch_kwargs)
+            except Exception:
+                raise last_error
+
+    return playwright.chromium.launch(**launch_kwargs)
+
+
+def _launch_persistent_context(playwright: Playwright, config: BrowserConfig, common_kwargs: dict) -> BrowserContext:
+    launch_kwargs = {
+        "user_data_dir": config.user_data_dir,
+        "headless": config.headless,
+        "slow_mo": config.slow_mo_ms,
+        "args": _LAUNCH_ARGS,
+        **common_kwargs,
+    }
+
+    if sys.platform.startswith("win"):
+        last_error: Optional[Exception] = None
+        for channel in _WINDOWS_CHANNELS:
+            try:
+                return playwright.chromium.launch_persistent_context(channel=channel, **launch_kwargs)
+            except Exception as exc:
+                last_error = exc
+        if last_error is not None:
+            try:
+                return playwright.chromium.launch_persistent_context(**launch_kwargs)
+            except Exception:
+                raise last_error
+
+    return playwright.chromium.launch_persistent_context(**launch_kwargs)
