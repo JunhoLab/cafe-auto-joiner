@@ -327,28 +327,43 @@ class CafeJoinAutomation:
             return
 
         self._log_element_info("닉네임 필드 발견", nickname_input)
-        self._human_fill(nickname_input, self.config.nickname)
-        time.sleep(random.uniform(0.3, 0.6))
-
-        # 중복 확인 버튼 클릭 (있을 경우)
         check_btn = self._find_in_form(page, self.config.selectors_for("nickname_duplicate_check"))
-        if check_btn:
-            check_btn.click()
-            time.sleep(random.uniform(0.8, 1.4))
+        candidates = [self.config.nickname]
+        if self.config.spare_nickname and self.config.spare_nickname.strip():
+            candidates.append(self.config.spare_nickname.strip())
 
-        # 중복 에러 감지
-        if self._any_locator_exists_in_form(page, self.config.selectors_for("nickname_error")):
-            if self.config.spare_nickname:
-                self.logger.warning("닉네임 중복 감지 — 여분 닉네임 사용: %s", self.config.spare_nickname)
-                nickname_input.fill("")
-                self._human_fill(nickname_input, self.config.spare_nickname)
-                if check_btn:
+        for idx, candidate in enumerate(candidates):
+            nickname_input.fill("")
+            self._human_fill(nickname_input, candidate)
+            time.sleep(random.uniform(0.3, 0.6))
+
+            if check_btn:
+                try:
                     check_btn.click()
                     time.sleep(random.uniform(0.8, 1.4))
+                except PlaywrightError as exc:
+                    self.logger.warning("닉네임 중복확인 클릭 실패: %s", exc)
+
+            if not self._wait_for_nickname_duplicate(page):
+                if idx > 0:
+                    self.logger.info("여분 닉네임으로 전환 완료: %s", candidate)
+                self.completed_steps.append("nickname_filled")
+                return
+
+            if idx < len(candidates) - 1:
+                self.logger.warning("닉네임 중복 감지 — 여분 닉네임 사용: %s", candidates[idx + 1])
             else:
-                self.logger.warning("닉네임 중복 감지, 여분 닉네임 없음 — 그대로 진행")
+                self.logger.warning("닉네임 중복 감지, 사용 가능한 여분 닉네임 없음 — 그대로 진행")
 
         self.completed_steps.append("nickname_filled")
+
+    def _wait_for_nickname_duplicate(self, page: Page, timeout_sec: float = 2.5) -> bool:
+        deadline = time.time() + timeout_sec
+        while time.time() < deadline:
+            if self._any_locator_exists_in_form(page, self.config.selectors_for("nickname_error")):
+                return True
+            time.sleep(0.2)
+        return self._any_locator_exists_in_form(page, self.config.selectors_for("nickname_error"))
 
     # ──────────────────────────────────────────────
     # Step 5: 가입 질문 답변

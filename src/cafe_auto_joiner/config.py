@@ -37,11 +37,21 @@ DEFAULT_SELECTORS: Dict[str, List[str]] = {
     "nickname_error": [
         'text=이미 사용 중',
         'text=이미 사용중',
+        'text=이미 사용 중인 별명입니다.',
+        'text=이미 사용 중인 닉네임입니다.',
         'text=중복된 닉네임',
+        'text=중복된 별명',
         'text=사용할 수 없는 닉네임',
+        'text=사용할 수 없는 별명',
         'text=이미 등록된 닉네임',
+        'text=이미 등록된 별명',
+        'text=사용중인 닉네임',
+        'text=사용중인 별명',
+        '.join_nick_info .info_text.red',
         '.error:has-text("닉네임")',
+        '.error:has-text("별명")',
         '.caution:has-text("닉네임")',
+        '.caution:has-text("별명")',
     ],
     "submit_application": [
         # 네이버 카페 신형 UI 실제 버튼 (BaseButton + skinGreen)
