@@ -1,20 +1,11 @@
 import os
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_submodules
-
-
 project_dir = Path(os.getcwd()).resolve()
 datas = []
 playwright_bundle = project_dir / "ms-playwright"
 if playwright_bundle.exists():
     datas.append((str(playwright_bundle), "ms-playwright"))
-
-hiddenimports = (
-    collect_submodules("playwright")
-    + collect_submodules("PySide6")
-    + collect_submodules("openpyxl")
-)
 
 
 a = Analysis(
@@ -22,11 +13,56 @@ a = Analysis(
     pathex=[str(project_dir), str(project_dir / "src")],
     binaries=[],
     datas=datas,
-    hiddenimports=hiddenimports,
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        "PySide6.Qt3DAnimation",
+        "PySide6.Qt3DCore",
+        "PySide6.Qt3DExtras",
+        "PySide6.Qt3DInput",
+        "PySide6.Qt3DLogic",
+        "PySide6.Qt3DRender",
+        "PySide6.QtCharts",
+        "PySide6.QtDataVisualization",
+        "PySide6.QtMultimedia",
+        "PySide6.QtMultimediaWidgets",
+        "PySide6.QtNetworkAuth",
+        "PySide6.QtOpenGL",
+        "PySide6.QtOpenGLWidgets",
+        "PySide6.QtPdf",
+        "PySide6.QtPdfWidgets",
+        "PySide6.QtPositioning",
+        "PySide6.QtQuick",
+        "PySide6.QtQuick3D",
+        "PySide6.QtQuickControls2",
+        "PySide6.QtQml",
+        "PySide6.QtRemoteObjects",
+        "PySide6.QtScxml",
+        "PySide6.QtSensors",
+        "PySide6.QtSerialBus",
+        "PySide6.QtSerialPort",
+        "PySide6.QtSpatialAudio",
+        "PySide6.QtSql",
+        "PySide6.QtStateMachine",
+        "PySide6.QtTest",
+        "PySide6.QtTextToSpeech",
+        "PySide6.QtWebChannel",
+        "PySide6.QtWebEngine",
+        "PySide6.QtWebEngineCore",
+        "PySide6.QtWebEngineQuick",
+        "PySide6.QtWebEngineWidgets",
+        "PySide6.QtWebSockets",
+        "PySide6.QtXml",
+        "PySide6.QtXmlPatterns",
+        "tkinter",
+        "matplotlib",
+        "numpy.tests",
+        "openpyxl.tests",
+        "unittest",
+        "pydoc",
+    ],
     noarchive=False,
     optimize=0,
 )

@@ -18,6 +18,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+
+      - name: Cache Playwright Chromium
+        uses: actions/cache@v4
+        with:
+          path: ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('requirements.txt') }}
 
       - name: Install dependencies
         shell: pwsh
@@ -36,9 +43,15 @@ jobs:
         run: |
           pyinstaller --noconfirm --clean CafeAutoJoiner.spec
 
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/CafeAutoJoiner/* -DestinationPath dist/CafeAutoJoiner-windows.zip -CompressionLevel Optimal -Force
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: CafeAutoJoiner-windows
-          path: dist/CafeAutoJoiner
+          path: dist/CafeAutoJoiner-windows.zip
+          compression-level: 0
           if-no-files-found: error

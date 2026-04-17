@@ -47,7 +47,8 @@ GUI에서 `2Captcha API 키`를 입력한 뒤 실행한다.
 1. 저장소를 GitHub에 push
 2. GitHub `Actions` 탭에서 `Build Windows EXE` 실행
 3. 완료 후 artifact `CafeAutoJoiner-windows` 다운로드
-4. 압축을 풀고 `CafeAutoJoiner.exe` 실행
+4. `CafeAutoJoiner-windows.zip` 압축 해제
+5. 압축을 푼 폴더 안의 `CafeAutoJoiner.exe` 실행
 
 로컬 윈도우 PC에서 직접 빌드할 경우:
 
