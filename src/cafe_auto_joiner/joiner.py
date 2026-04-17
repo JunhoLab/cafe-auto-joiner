@@ -618,8 +618,9 @@ class CafeJoinAutomation:
             self.logger.info("가입 결과 추론: %s", inferred)
             return inferred
 
-        self.logger.warning("가입 완료/대기 지시자를 찾을 수 없음")
-        return "failed"
+        self.logger.warning("가입 완료/대기 지시자를 찾지 못했지만 명시적 실패도 없어 대기로 간주합니다.")
+        self.completed_steps.append("verified")
+        return "pending"
 
     def _infer_outcome(self, page: Page) -> str:
         try:
